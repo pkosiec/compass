@@ -8,6 +8,7 @@ This folder contains documents that relate to the project.
 
 Architecture:
 -   [Components - High Level Architecture](./architecture/high-level-components.md)
+-   [Application and Runtime Flows](./architecture/app-runtime-flows.md)
 -   [API Credentials Flow](./architecture/api-credentials-flows.md)
 
 Investigations:

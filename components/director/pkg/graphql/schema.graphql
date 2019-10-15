@@ -1,7 +1,15 @@
+enum ObjectType {
+	RUNTIME
+	APPLICATION
+	INTEGRATION_SYSTEM
+}
+
 """
 HasScopes directive is added automatically to every query and mutation by scopesdecorator plugin that is triggerred by gqlgen.sh script.
 """
 directive @hasScopes(path: String!) on FIELD_DEFINITION
+directive @limitScope(for: ObjectType!, additionalDBCondition: String!) on FIELD_DEFINITION
+
 scalar Any
 
 scalar CLOB
@@ -239,11 +247,11 @@ type APIDefinition {
 	"""
 	"If runtime does not exist, an error is returned. If runtime exists but Auth for it is not set, defaultAuth is returned if specified.
 	"""
-	auth(runtimeID: ID!): APIRuntimeAuth!
+	auth(runtimeID: ID!): APIRuntimeAuth! @limitScope(for: RUNTIME, additionalDBCondition: "runtime_id={context.runtimeID}") # See just auths assigned to given Runtime ID
 	"""
 	Returns authentication details for all runtimes, even for a runtime, where Auth is not yet specified.
 	"""
-	auths: [APIRuntimeAuth!]!
+	auths: [APIRuntimeAuth!]! @limitScope(for: RUNTIME, additionalDBCondition: "runtime_id={context.runtimeID}") # See just auths assigned to given Runtime ID
 	"""
 	If defaultAuth is specified, it will be used for all Runtimes that does not specify Auth explicitly.
 	"""
@@ -290,7 +298,7 @@ type Application {
 	"""
 	eventAPIs(group: String, first: Int = 100, after: PageCursor): EventAPIDefinitionPage!
 	documents(first: Int = 100, after: PageCursor): DocumentPage!
-	auths: [SystemAuth!]!
+	auths: [SystemAuth!]! # Secured with hasScopes
 }
 
 type ApplicationPage implements Pageable {
@@ -456,7 +464,7 @@ type Runtime {
 	"""
 	Returns array of authentication details for Runtime. For now at most one element in array will be returned.
 	"""
-	auths: [SystemAuth!]!
+	auths: [SystemAuth!]! # ???
 }
 
 type RuntimePage implements Pageable {
@@ -512,16 +520,16 @@ type Query {
 	"""
 	Maximum `first` parameter value is 100
 	"""
-	runtimes(filter: [LabelFilter!], first: Int = 100, after: PageCursor): RuntimePage! @hasScopes(path: "graphql.query.runtimes")
-	runtime(id: ID!): Runtime @hasScopes(path: "graphql.query.runtime")
+	runtimes(filter: [LabelFilter!], first: Int = 100, after: PageCursor): RuntimePage! @hasScopes(path: "graphql.query.runtimes") @limitScope(for: Runtime, additionalDBCondition: "runtime_id={context.runtimeID}") # See just auths assigned to given Runtime ID
+	runtime(id: ID!): Runtime @hasScopes(path: "graphql.query.runtime") @limitScope(for: Runtime, additionalDBCondition: "runtime_id={context.runtimeID}") # See just auths assigned to given Runtime ID
 	labelDefinitions: [LabelDefinition!]! @hasScopes(path: "graphql.query.labelDefinitions")
 	labelDefinition(key: String!): LabelDefinition @hasScopes(path: "graphql.query.labelDefinition")
 	healthChecks(types: [HealthCheckType!], origin: ID, first: Int = 100, after: PageCursor): HealthCheckPage! @hasScopes(path: "graphql.query.healthChecks")
 	"""
 	Maximum `first` parameter value is 100
 	"""
-	integrationSystems(first: Int = 100, after: PageCursor): IntegrationSystemPage! @hasScopes(path: "graphql.query.integrationSystems")
-	integrationSystem(id: ID!): IntegrationSystem @hasScopes(path: "graphql.query.integrationSystem")
+	integrationSystems(first: Int = 100, after: PageCursor): IntegrationSystemPage! @hasScopes(path: "graphql.query.integrationSystems") @limitScope(for: INTEGRATION_SYSTEM, additionalDBCondition: "integration_system_id={context.integrationSystemID}") # See just auths assigned to given Runtime ID
+	integrationSystem(id: ID!): IntegrationSystem @hasScopes(path: "graphql.query.integrationSystem") @limitScope(for: INTEGRATION_SYSTEM, additionalDBCondition: "integration_system_id={context.integrationSystemID}") # See just auths assigned to given Runtime ID
 }
 
 type Mutation {

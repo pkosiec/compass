@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"github.com/kyma-incubator/compass/components/director/internal/domain/apptemplate"
 
 	"github.com/kyma-incubator/compass/components/director/internal/domain/oauth20"
 	"github.com/kyma-incubator/compass/components/director/pkg/scope"
@@ -63,6 +64,7 @@ func NewRootResolver(transact persistence.Transactioner, scopeCfgProvider *scope
 	tokenConverter := onetimetoken.NewConverter()
 	systemAuthConverter := systemauth.NewConverter(authConverter)
 	intSysConverter := integrationsystem.NewConverter()
+	appTemplateConverter := apptemplate.NewConverter(appConverter)
 
 	healthcheckRepo := healthcheck.NewRepository()
 	runtimeRepo := runtime.NewRepository()

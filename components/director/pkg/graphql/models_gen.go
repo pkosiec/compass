@@ -803,6 +803,47 @@ func (e HealthCheckType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type ManagedResourceType string
+
+const (
+	ManagedResourceTypeRuntime     ManagedResourceType = "RUNTIME"
+	ManagedResourceTypeApplication ManagedResourceType = "APPLICATION"
+)
+
+var AllManagedResourceType = []ManagedResourceType{
+	ManagedResourceTypeRuntime,
+	ManagedResourceTypeApplication,
+}
+
+func (e ManagedResourceType) IsValid() bool {
+	switch e {
+	case ManagedResourceTypeRuntime, ManagedResourceTypeApplication:
+		return true
+	}
+	return false
+}
+
+func (e ManagedResourceType) String() string {
+	return string(e)
+}
+
+func (e *ManagedResourceType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ManagedResourceType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ManagedResourceType", str)
+	}
+	return nil
+}
+
+func (e ManagedResourceType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type RuntimeStatusCondition string
 
 const (

@@ -3,6 +3,10 @@ HasScopes directive is added automatically to every query and mutation by scopes
 """
 directive @hasScopes(path: String!) on FIELD_DEFINITION
 """
+limitManagerAccessTo directive limits access to only Applications or Runtimes, which are managed by Integration System
+"""
+directive @limitManagerAccessTo(managedResourceType: ManagedResourceType!, idField: String!) on FIELD_DEFINITION
+"""
 Validate directive marks mutation arguments that will be validated.
 """
 directive @validate on ARGUMENT_DEFINITION
@@ -71,6 +75,11 @@ enum HealthCheckStatusCondition {
 
 enum HealthCheckType {
 	MANAGEMENT_PLANE_APPLICATION_HEALTHCHECK
+}
+
+enum ManagedResourceType {
+	RUNTIME
+	APPLICATION
 }
 
 enum RuntimeStatusCondition {
@@ -585,7 +594,7 @@ type Query {
 	- [query api runtime auths](examples/query-application/query-api-runtime-auths.graphql)
 	- [query application](examples/query-application/query-application.graphql)
 	"""
-	application(id: ID!): Application @hasScopes(path: "graphql.query.application")
+	application(id: ID!): Application @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "id") @hasScopes(path: "graphql.query.application")
 	"""
 	Maximum `first` parameter value is 100
 	
@@ -613,12 +622,12 @@ type Query {
 	- [query runtimes with pagination](examples/query-runtimes/query-runtimes-with-pagination.graphql)
 	- [query runtimes](examples/query-runtimes/query-runtimes.graphql)
 	"""
-	runtimes(filter: [LabelFilter!], first: Int = 100, after: PageCursor): RuntimePage! @hasScopes(path: "graphql.query.runtimes")
+	runtimes(filter: [LabelFilter!], first: Int = 100, after: PageCursor): RuntimePage! @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "id") @hasScopes(path: "graphql.query.runtimes")
 	"""
 	**Examples**
 	- [query runtime](examples/query-runtime/query-runtime.graphql)
 	"""
-	runtime(id: ID!): Runtime @hasScopes(path: "graphql.query.runtime")
+	runtime(id: ID!): Runtime @limitManagerAccessTo(managedResourceType: RUNTIME, idField: "id") @hasScopes(path: "graphql.query.runtime")
 	labelDefinitions: [LabelDefinition!]! @hasScopes(path: "graphql.query.labelDefinitions")
 	"""
 	**Examples**
@@ -654,12 +663,12 @@ type Mutation {
 	**Examples**
 	- [update application](examples/update-application/update-application.graphql)
 	"""
-	updateApplication(id: ID!, in: ApplicationUpdateInput! @validate): Application! @hasScopes(path: "graphql.mutation.updateApplication")
+	updateApplication(id: ID!, in: ApplicationUpdateInput! @validate): Application! @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "id") @hasScopes(path: "graphql.mutation.updateApplication")
 	"""
 	**Examples**
 	- [delete application](examples/delete-application/delete-application.graphql)
 	"""
-	deleteApplication(id: ID!): Application! @hasScopes(path: "graphql.mutation.deleteApplication")
+	deleteApplication(id: ID!): Application! @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "id") @hasScopes(path: "graphql.mutation.deleteApplication")
 	"""
 	**Examples**
 	- [create application template](examples/create-application-template/create-application-template.graphql)
@@ -689,12 +698,12 @@ type Mutation {
 	**Examples**
 	- [update runtime](examples/update-runtime/update-runtime.graphql)
 	"""
-	updateRuntime(id: ID!, in: RuntimeInput! @validate): Runtime! @hasScopes(path: "graphql.mutation.updateRuntime")
+	updateRuntime(id: ID!, in: RuntimeInput! @validate): Runtime! @limitManagerAccessTo(managedResourceType: RUNTIME, idField: "id") @hasScopes(path: "graphql.mutation.updateRuntime")
 	"""
 	**Examples**
 	- [delete runtime](examples/delete-runtime/delete-runtime.graphql)
 	"""
-	deleteRuntime(id: ID!): Runtime! @hasScopes(path: "graphql.mutation.deleteRuntime")
+	deleteRuntime(id: ID!): Runtime! @limitManagerAccessTo(managedResourceType: RUNTIME, idField: "id") @hasScopes(path: "graphql.mutation.deleteRuntime")
 	"""
 	**Examples**
 	- [create integration system](examples/create-integration-system/create-integration-system.graphql)
@@ -714,58 +723,94 @@ type Mutation {
 	**Examples**
 	- [add application webhook](examples/add-webhook/add-application-webhook.graphql)
 	"""
-	addWebhook(applicationID: ID!, in: WebhookInput! @validate): Webhook! @hasScopes(path: "graphql.mutation.addWebhook")
+	addWebhook(applicationID: ID!, in: WebhookInput! @validate): Webhook! @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "applicationID") @hasScopes(path: "graphql.mutation.addWebhook")
 	"""
 	**Examples**
 	- [update application webhook](examples/update-webhook/update-application-webhook.graphql)
+
+	TODO: Use @limitManagerAccessTo directive
 	"""
 	updateWebhook(webhookID: ID!, in: WebhookInput! @validate): Webhook! @hasScopes(path: "graphql.mutation.updateWebhook")
 	"""
 	**Examples**
 	- [delete application webhook](examples/delete-webhook/delete-application-webhook.graphql)
+
+	TODO: Use @limitManagerAccessTo directive
 	"""
-	deleteWebhook(webhookID: ID!): Webhook! @hasScopes(path: "graphql.mutation.deleteWebhook")
+	deleteWebhook(webhookID: ID!): Webhook! @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "applicationID") @hasScopes(path: "graphql.mutation.deleteWebhook")
 	"""
 	**Examples**
 	- [add api](examples/add-api/add-api.graphql)
 	"""
-	addAPI(applicationID: ID!, in: APIDefinitionInput! @validate): APIDefinition! @hasScopes(path: "graphql.mutation.addAPI")
+	addAPI(applicationID: ID!, in: APIDefinitionInput! @validate): APIDefinition! @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "applicationID") @hasScopes(path: "graphql.mutation.addAPI")
 	"""
 	**Examples**
 	- [update api](examples/update-api/update-api.graphql)
+
+	TODO: Use @limitManagerAccessTo directive
 	"""
 	updateAPI(id: ID!, in: APIDefinitionInput! @validate): APIDefinition! @hasScopes(path: "graphql.mutation.updateAPI")
 	"""
 	**Examples**
 	- [delete api](examples/delete-api/delete-api.graphql)
+
+	TODO: Use @limitManagerAccessTo directive
 	"""
 	deleteAPI(id: ID!): APIDefinition! @hasScopes(path: "graphql.mutation.deleteAPI")
+
+	"""
+	TODO: Use @limitManagerAccessTo directive
+	"""
 	refetchAPISpec(apiID: ID!): APISpec! @hasScopes(path: "graphql.mutation.refetchAPISpec")
-	generateOneTimeTokenForRuntime(id: ID!): OneTimeToken! @hasScopes(path: "graphql.mutation.generateOneTimeTokenForRuntime")
-	generateOneTimeTokenForApplication(id: ID!): OneTimeToken! @hasScopes(path: "graphql.mutation.generateOneTimeTokenForApplication")
-	generateClientCredentialsForRuntime(id: ID!): SystemAuth! @hasScopes(path: "graphql.mutation.generateClientCredentialsForRuntime")
-	generateClientCredentialsForApplication(id: ID!): SystemAuth! @hasScopes(path: "graphql.mutation.generateClientCredentialsForApplication")
+	generateOneTimeTokenForRuntime(id: ID!): OneTimeToken!  @limitManagerAccessTo(managedResourceType: RUNTIME, idField: "id") @hasScopes(path: "graphql.mutation.generateOneTimeTokenForRuntime")
+	generateOneTimeTokenForApplication(id: ID!): OneTimeToken!  @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "id") @hasScopes(path: "graphql.mutation.generateOneTimeTokenForApplication")
+	generateClientCredentialsForRuntime(id: ID!): SystemAuth!  @limitManagerAccessTo(managedResourceType: RUNTIME, idField: "id") @hasScopes(path: "graphql.mutation.generateClientCredentialsForRuntime")
+	generateClientCredentialsForApplication(id: ID!): SystemAuth!  @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "id") @hasScopes(path: "graphql.mutation.generateClientCredentialsForApplication")
 	generateClientCredentialsForIntegrationSystem(id: ID!): SystemAuth! @hasScopes(path: "graphql.mutation.generateClientCredentialsForIntegrationSystem")
+
+	"""
+	TODO: Use @limitManagerAccessTo directive
+	"""
 	deleteSystemAuthForRuntime(authID: ID!): SystemAuth! @hasScopes(path: "graphql.mutation.deleteSystemAuthForRuntime")
+	"""
+	TODO: Use @limitManagerAccessTo directive
+	"""
 	deleteSystemAuthForApplication(authID: ID!): SystemAuth! @hasScopes(path: "graphql.mutation.deleteSystemAuthForApplication")
 	deleteSystemAuthForIntegrationSystem(authID: ID!): SystemAuth! @hasScopes(path: "graphql.mutation.deleteSystemAuthForIntegrationSystem")
 	"""
 	Sets Auth for given Application and Runtime. To set default Auth for API, use updateAPI mutation
+
+	TODO: Use @limitManagerAccessTo directive
 	"""
 	setAPIAuth(apiID: ID!, runtimeID: ID!, in: AuthInput! @validate): APIRuntimeAuth! @hasScopes(path: "graphql.mutation.setAPIAuth")
+	"""
+	TODO: Use @limitManagerAccessTo directive
+	"""
 	deleteAPIAuth(apiID: ID!, runtimeID: ID!): APIRuntimeAuth! @hasScopes(path: "graphql.mutation.deleteAPIAuth")
-	addEventAPI(applicationID: ID!, in: EventAPIDefinitionInput! @validate): EventAPIDefinition! @hasScopes(path: "graphql.mutation.addEventAPI")
+
+	addEventAPI(applicationID: ID!, in: EventAPIDefinitionInput! @validate): EventAPIDefinition! @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "applicationID") @hasScopes(path: "graphql.mutation.addEventAPI")
+	"""
+	TODO: Use @limitManagerAccessTo directive
+	"""
 	updateEventAPI(id: ID!, in: EventAPIDefinitionInput! @validate): EventAPIDefinition! @hasScopes(path: "graphql.mutation.updateEventAPI")
+	"""
+	TODO: Use @limitManagerAccessTo directive
+	"""
 	deleteEventAPI(id: ID!): EventAPIDefinition! @hasScopes(path: "graphql.mutation.deleteEventAPI")
+	"""
+	TODO: Use @limitManagerAccessTo directive
+	"""
 	refetchEventAPISpec(eventID: ID!): EventAPISpec! @hasScopes(path: "graphql.mutation.refetchEventAPISpec")
 	"""
 	**Examples**
 	- [add document](examples/add-document/add-document.graphql)
 	"""
-	addDocument(applicationID: ID!, in: DocumentInput! @validate): Document! @hasScopes(path: "graphql.mutation.addDocument")
+	addDocument(applicationID: ID!, in: DocumentInput! @validate): Document! @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "applicationID") @hasScopes(path: "graphql.mutation.addDocument")
 	"""
 	**Examples**
 	- [delete document](examples/delete-document/delete-document.graphql)
+
+	TODO: Use @limitManagerAccessTo directive
 	"""
 	deleteDocument(id: ID!): Document! @hasScopes(path: "graphql.mutation.deleteDocument")
 	"""
@@ -789,21 +834,21 @@ type Mutation {
 	**Examples**
 	- [set application label](examples/set-application-label/set-application-label.graphql)
 	"""
-	setApplicationLabel(applicationID: ID!, key: String!, value: Any!): Label! @hasScopes(path: "graphql.mutation.setApplicationLabel")
+	setApplicationLabel(applicationID: ID!, key: String!, value: Any!): Label! @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "applicationID") @hasScopes(path: "graphql.mutation.setApplicationLabel")
 	"""
 	If Application does not exist or the label key is not found, it returns an error.
 	
 	**Examples**
 	- [delete application label](examples/delete-application-label/delete-application-label.graphql)
 	"""
-	deleteApplicationLabel(applicationID: ID!, key: String!): Label! @hasScopes(path: "graphql.mutation.deleteApplicationLabel")
+	deleteApplicationLabel(applicationID: ID!, key: String!): Label! @limitManagerAccessTo(managedResourceType: APPLICATION, idField: "applicationID") @hasScopes(path: "graphql.mutation.deleteApplicationLabel")
 	"""
 	If a label with given key already exist, it will be replaced with provided value.
 	"""
-	setRuntimeLabel(runtimeID: ID!, key: String!, value: Any!): Label! @hasScopes(path: "graphql.mutation.setRuntimeLabel")
+	setRuntimeLabel(runtimeID: ID!, key: String!, value: Any!): Label! @limitManagerAccessTo(managedResourceType: RUNTIME, idField: "runtimeID") @hasScopes(path: "graphql.mutation.setRuntimeLabel")
 	"""
 	If Runtime does not exist or the label key is not found, it returns an error.
 	"""
-	deleteRuntimeLabel(runtimeID: ID!, key: String!): Label! @hasScopes(path: "graphql.mutation.deleteRuntimeLabel")
+	deleteRuntimeLabel(runtimeID: ID!, key: String!): Label! @limitManagerAccessTo(managedResourceType: RUNTIME, idField: "runtimeID") @hasScopes(path: "graphql.mutation.deleteRuntimeLabel")
 }
 
